@@ -50,3 +50,26 @@ app.get("/sala/:codigo", (req, res) => {
     jugadores: sala.jugadores.length
   });
 });
+
+// Unirse a sala
+app.get("/unirse/:codigo", (req, res) => {
+  const codigo = req.params.codigo.toUpperCase();
+  const sala = salas[codigo];
+
+  if (!sala) {
+    return res.status(404).json({
+      ok: false,
+      error: "Sala no existe"
+    });
+  }
+
+  sala.jugadores.push({
+    id: Date.now()
+  });
+
+  res.json({
+    ok: true,
+    sala: codigo,
+    jugadores: sala.jugadores.length
+  });
+});
