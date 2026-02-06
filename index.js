@@ -1,77 +1,46 @@
 const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*" }
+});
 
 const PORT = process.env.PORT || 3000;
-
-// Estado simple en memoria
 const salas = {};
 
 app.get("/", (req, res) => {
   res.send("Servidor WereSan activo 🐺🔥");
 });
 
-// Crear sala
 app.get("/crear-sala", (req, res) => {
-  const codigo = Math.random()
-    .toString(36)
-    .substring(2, 7)
-    .toUpperCase();
+  const codigo = Math.random().toString(36).substring(2, 7).toUpperCase();
 
   salas[codigo] = {
-    jugadores: [],
-    creada: Date.now()
+    jugadores: []
   };
 
-  res.json({
-    ok: true,
-    sala: codigo
+  res.json({ ok: true, sala: codigo });
+});
+
+io.on("connection", socket => {
+  console.log("Jugador conectado:", socket.id);
+
+  socket.on("unirse", ({ codigo, nombre }) => {
+    const sala = salas[codigo];
+    if (!sala) return;
+
+    sala.jugadores.push({ id: socket.id, nombre });
+    socket.join(codigo);
+
+    io.to(codigo).emit("estado", {
+      jugadores: sala.jugadores.map(j => j.nombre)
+    });
   });
 });
 
-app.listen(PORT, () => {
-  console.log("Servidor corriendo en puerto " + PORT);
-});
-
-// Ver sala
-app.get("/sala/:codigo", (req, res) => {
-  const codigo = req.params.codigo.toUpperCase();
-  const sala = salas[codigo];
-
-  if (!sala) {
-    return res.status(404).json({
-      ok: false,
-      error: "Sala no existe"
-    });
-  }
-
-  res.json({
-    ok: true,
-    sala: codigo,
-    jugadores: sala.jugadores.length
-  });
-});
-
-// Unirse a sala
-app.get("/unirse/:codigo", (req, res) => {
-  const codigo = req.params.codigo.toUpperCase();
-  const sala = salas[codigo];
-
-  if (!sala) {
-    return res.status(404).json({
-      ok: false,
-      error: "Sala no existe"
-    });
-  }
-
-const nombre = req.query.nombre || "Anon";
-
-sala.jugadores.push({
-  id: Date.now(),
-  nombre
-});
-
-res.json({
-  ok: true,
-  sala: codigo,
-  jugadores: sala.jugadores.map(j => j.nombre)
+server.listen(PORT, () => {
+  console.log("Servidor WereSan en tiempo real 🔥");
 });
