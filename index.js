@@ -63,9 +63,12 @@ app.get("/unirse/:codigo", (req, res) => {
     });
   }
 
-  sala.jugadores.push({
-    id: Date.now()
-  });
+const nombre = req.query.nombre || "Anon";
+
+sala.jugadores.push({
+  id: Date.now(),
+  nombre
+});
 
   res.json({
     ok: true,
