@@ -31,3 +31,22 @@ app.get("/crear-sala", (req, res) => {
 app.listen(PORT, () => {
   console.log("Servidor corriendo en puerto " + PORT);
 });
+
+// Ver sala
+app.get("/sala/:codigo", (req, res) => {
+  const codigo = req.params.codigo.toUpperCase();
+  const sala = salas[codigo];
+
+  if (!sala) {
+    return res.status(404).json({
+      ok: false,
+      error: "Sala no existe"
+    });
+  }
+
+  res.json({
+    ok: true,
+    sala: codigo,
+    jugadores: sala.jugadores.length
+  });
+});
