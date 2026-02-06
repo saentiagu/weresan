@@ -70,9 +70,8 @@ sala.jugadores.push({
   nombre
 });
 
-  res.json({
-    ok: true,
-    sala: codigo,
-    jugadores: sala.jugadores.length
-  });
+res.json({
+  ok: true,
+  sala: codigo,
+  jugadores: sala.jugadores.map(j => j.nombre)
 });
